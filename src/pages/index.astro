@@ -1,11 +1,204 @@
 ---
-import Welcome from '../components/Welcome.astro';
+import Infoproduct from '../components/Infoproduct.astro';
+import Navbar from '../components/Navbar.astro';
+import Card from '../components/ui/Card.astro';
 import Layout from '../layouts/Layout.astro';
+import { GET } from './api/db/products.json';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+let response = await GET(Astro)
+const products = await response.json()
+
+function inventoryValue (){
+	let valorTotal = 0;
+	for (const producto of products) {
+		valorTotal += producto.price * producto.stock;
+	}
+	return valorTotal;
+}
+function inventoryProduct (){
+	let productTotal = 0;
+	for (const producto of products) {
+		if(producto.stock > 0) productTotal += 1;
+	}
+	return productTotal;
+}
+function inventoryLowProduct (){
+	let productLow = 0;
+	for (const producto of products) {
+		if(producto.stock < 5){
+			productLow += 1;
+		}
+	}
+	return productLow;
+}
+function inventoryTotalSales (){
+	let totalSales = 0;
+	for (const producto of products) {
+		const sales = producto.stockStart - producto.stock;
+  		const valorVentasProducto = sales * producto.price;
+		if(valorVentasProducto > 0){
+			totalSales += valorVentasProducto;
+		}
+	}
+	return totalSales;
+}
+function inventorySales (){
+	let salesNumber = 0;
+	for (const producto of products) {
+		if(producto.orderFinish){
+			salesNumber += 1;
+		}
+	}
+	return salesNumber;
+}
+function inventorySold (){
+	let bestSell: any[] = [];
+	let lessSold: any[] = [];;
+	for (const producto of products) {
+		const sold = producto.stockStart - producto.stock;
+		if(sold < 4){
+			lessSold.push(producto)
+		}else if(sold > 7){
+			bestSell.push(producto)
+		}
+	}
+	return {bestSell, lessSold};
+}
+
+const totalInventoryValue = inventoryValue()
+const totalProduct = inventoryProduct()
+const lowStock = inventoryLowProduct()
+const valueSales = inventoryTotalSales()
+const totalSales = inventorySales()
+const { bestSell, lessSold } = inventorySold()
 ---
 
-<Layout>
-	<Welcome />
+<Layout title='Home' description='Basic home page where inventory summaries are displayed'>
+	<Navbar>
+		<a href="/" class='text-black text-xl font-bold rounded-lg p-1'>
+			Home
+		</a>
+		<ul class="flex gap-5 items-center justify-center">
+			<li>
+				<a href="#">Product</a>
+			</li>
+			<li>
+				<a href="#">Orders</a>
+			</li>
+			<li>
+				<a href="#">Reports</a>
+			</li>
+		</ul>
+		<div class="flex justify-center items-center gap-2">
+			<picture class="cursor-pointer">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="24" height="24" stroke-width="2">
+					<path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2"></path>
+					<path d="M9 12h12l-3 -3"></path>
+					<path d="M18 15l3 -3"></path>
+				</svg>
+			</picture>
+		</div>
+	</Navbar>
+	<main class="m-2 p-2 box-border">
+		<div class="m-1 md:m-4 flex gap-2 md:gap-5 flex-wrap justify-center items-center">
+			
+			<Card class="card-style w-52 md:w-60 h-36">
+				<header class="flex justify-center items-center"> 
+					Inventory Value
+				</header>
+				<div class="p-3 flex flex-col">
+					<p><strong>$</strong>{totalInventoryValue}</p>
+				</div>
+				<footer>
+					+180.1% since last month
+				</footer>
+			</Card>
+			<Card class="card-style w-52 md:w-60 h-36">
+				<header class="flex justify-between items-center gap-5"> 
+					<h6>Total Products</h6>
+				</header>
+				<div class="p-3 flex flex-col">
+					<p>{totalProduct}</p>
+				</div>
+				<footer>
+					+20.1% since last month
+				</footer>
+			</Card>
+			<Card class="card-style w-52 md:w-60 h-36">
+				<header class="flex justify-center items-center"> 
+					Low Stock
+				</header>
+				<div class="p-3 flex flex-col">
+					<p>{lowStock}</p>
+				</div>
+				<footer>
+					+19% since last month
+				</footer>
+			</Card>
+			<Card class="card-style w-52 md:w-60 h-36">
+				<header class="flex justify-center items-center"> 
+					Value of sales
+				</header>
+				<div class="p-3 flex flex-col">
+					<p><strong>$</strong>{valueSales}</p>
+				</div>
+				<footer>
+					since last week
+				</footer>
+			</Card>
+			<Card class="card-style w-52 md:w-60 h-36">
+				<header class="flex justify-center items-center"> 
+					Orders completed
+				</header>
+				<div class="p-3 flex flex-col">
+					<p>{totalSales}</p>
+				</div>
+				<footer>
+					+201 since last month
+				</footer>
+			</Card>
+			<Card class="card-style w-52 md:w-60 h-36">
+				<header class="flex justify-center items-center"> 
+					products to order
+				</header>
+				<div class="p-3 flex flex-col">
+					<p>10</p>
+				</div>
+				<footer>
+					+101 since last month
+				</footer>
+			</Card>
+			<Card class="card-style-large w-full sm:w-72 h-80">
+				<header class="flex justify-center items-center my-4"> 
+					Best selling
+				</header>
+				<div class="p-1 text-xs">
+					<Infoproduct products={bestSell}/>
+				</div>
+			</Card>
+			<Card class="card-style-large w-full sm:w-72 h-80">
+				<header class="flex justify-center items-center my-4"> 
+					Less sold
+				</header>
+				<div class="p-1 text-xs">
+					<Infoproduct products={lessSold}/>
+				</div>
+			</Card>
+		</div>
+	</main>
 </Layout>
+
+<style>
+	.card-style{
+		position: relative;
+		flex-direction: column;
+		border-width: 1px;
+		align-items: center;
+		padding: 0.75rem;
+	}
+	.card-style-large{
+		display: block;
+		border-width: 1px;
+		padding: 0.75rem;
+	}
+</style>

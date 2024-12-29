@@ -1,0 +1,43 @@
+---
+
+interface Props {
+    products:any[];
+    class?: string;
+    [x: string]: any;
+}
+
+const { products, class: className, ...rest } = Astro.props;
+---
+
+<ul class="flex flex-col gap-5">
+    <li class="flex justify-between items-center gap-3">
+        <section class="md:w-[10%]">#</section>
+        <section class="md:w-[45%]">Name</section>
+        <section class="md:w-[20%]">Stock</section>
+        <section class="md:w-[25%]">Price</section>
+    </li>
+    {products.map((product) =>(
+        <li class="flex justify-between items-center gap-3">
+            <section class="md:w-[10%]">
+                <picture>A</picture>
+            </section>
+            <div class="md:w-[45%] flex justify-start overflow-hidden">
+                <p class="font-medium leading-none">{product.name}</p>
+            </div>
+            <section class="md:w-[20%]">
+                <p class="text-muted-foreground">{product.stock}</p>
+            </section>
+            <section class="md:w-[25%]">
+                <p class="ml-auto font-medium">{product.price} <strong>$</strong></p>
+            </section>
+        </li>
+    ))}
+</ul>
+
+<style>
+    section{
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+    }
+</style>
